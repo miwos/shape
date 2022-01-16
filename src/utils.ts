@@ -18,7 +18,6 @@ export const perforatePath = (
     dashArray.push(holeStart - lastOffset, holeWidth)
     lastOffset = holeEnd
   }
-
   dashArray.push(path.length - lastOffset)
 
   const [firstDash] = dashArray
