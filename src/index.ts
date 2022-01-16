@@ -1,10 +1,19 @@
 import paper from 'paper'
 import { perforatePath, toXY } from './utils'
 
-// @ts-ignore
-paper.setup(document.querySelector('canvas'))
-
+let isSetup = false
 const markerRegExp = new RegExp(/^(midi|data)-(in|out|inout)/)
+
+/**
+ * Pass an optional canvas element to `paper.setup()`. Useful for debugging.
+ * If this function isn't called manually, `compileShape()` will take care of
+ * the setup.
+ */
+export const setup = (canvas?: HTMLCanvasElement) => {
+  // @ts-ignore
+  paper.setup(canvas)
+  isSetup = true
+}
 
 interface Handle {
   id: `${Handle['type']}-${Handle['index']}`
@@ -38,6 +47,8 @@ const getHandles = (markers: paper.Path[], shape: paper.Path) => {
 }
 
 export const compileShape = (svg: string) => {
+  if (!isSetup) setup()
+
   const parent = paper.project.importSVG(svg) as paper.Group
   // Get rid of the background layer.
   parent.firstChild.remove()

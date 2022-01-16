@@ -1,3 +1,5 @@
+import paper from 'paper'
+
 export const toXY = (point: paper.Point) => ({ x: point.x, y: point.y })
 
 export const perforatePath = (
