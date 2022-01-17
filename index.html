@@ -18,9 +18,7 @@
   <body>
     <canvas></canvas>
     <script type="module">
-      import { compileShape, setup } from './src/index'
-
-      setup(document.querySelector('canvas'))
+      import { compileShape } from './src/index'
 
       const svg = `<svg width="131" height="144" viewBox="0 0 131 144" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path id="shape" d="M54.9042 121.485C57.3512 117.219 61.6348 115.089 65.917 115.092C70.1992 115.089 74.4828 117.219 76.9298 121.485L89.7217 143.782L110.319 131.814L130.917 119.847L107.661 79.31C95.9922 58.9696 89.8488 41.8432 89.8488 18.3561V5.7821H41.9852V18.3561C41.9852 41.8432 35.8418 58.9697 24.1726 79.31L0.916992 119.847L21.5146 131.814L42.1122 143.782L54.9042 121.485Z" fill="#C4C4C4"/>
@@ -30,7 +28,7 @@
       </svg>
       `
 
-      console.log(compileShape(svg))
+      console.log(compileShape(svg, document.querySelector('canvas')))
     </script>
   </body>
 </html>

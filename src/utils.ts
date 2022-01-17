@@ -1,5 +1,3 @@
-import paper from 'paper'
-
 export const toXY = (point: paper.Point) => ({ x: point.x, y: point.y })
 
 export const perforatePath = (
@@ -7,7 +5,7 @@ export const perforatePath = (
   points: { x: number; y: number }[],
   holeWidth = 24
 ) => {
-  const offsets = points.map((hole) => path.getOffsetOf(new paper.Point(hole)))
+  const offsets = points.map((hole) => path.getOffsetOf(hole as any))
   const sorted = offsets.sort((a, b) => a - b)
 
   let dashOffset = 0

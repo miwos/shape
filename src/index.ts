@@ -1,19 +1,7 @@
-import paper from 'paper'
+import { Color, Project } from 'paper/dist/paper-core'
 import { perforatePath, toXY } from './utils'
 
-let isSetup = false
 const markerRegExp = new RegExp(/^(midi|data)-(in|out|inout)/)
-
-/**
- * Pass an optional canvas element to `paper.setup()`. Useful for debugging.
- * If this function isn't called manually, `compileShape()` will take care of
- * the setup.
- */
-export const setup = (canvas?: HTMLCanvasElement) => {
-  // @ts-ignore
-  paper.setup(canvas)
-  isSetup = true
-}
 
 interface Handle {
   id: `${Handle['type']}-${Handle['index']}`
@@ -46,10 +34,10 @@ const getHandles = (markers: paper.Path[], shape: paper.Path) => {
   })
 }
 
-export const compileShape = (svg: string) => {
-  if (!isSetup) setup()
+export const compileShape = (svg: string, debugCanvas?: HTMLCanvasElement) => {
+  const project = new Project(debugCanvas as any)
 
-  const parent = paper.project.importSVG(svg) as paper.Group
+  const parent = project.importSVG(svg) as paper.Group
   // Get rid of the background layer.
   parent.firstChild.remove()
 
@@ -62,12 +50,12 @@ export const compileShape = (svg: string) => {
 
   // Fit the view to the shape (without the markers).
   markers.forEach((el) => (el.visible = false))
-  paper.view.viewSize = parent.bounds.size.round()
-  parent.position = paper.view.center
+  project.view.viewSize = parent.bounds.size.round()
+  parent.position = project.view.center
 
   const outline = shape.clone()
   outline.name = 'outline'
-  outline.strokeColor = new paper.Color('black')
+  outline.strokeColor = new Color('black')
 
   const handles = getHandles(markers, shape)
 
@@ -75,7 +63,8 @@ export const compileShape = (svg: string) => {
   perforatePath(outline, pointsOnOutline)
 
   markers.forEach((el) => el.remove())
-  svg = paper.project.exportSVG({ asString: true }) as string
+  svg = project.exportSVG({ asString: true }) as string
+  if (!debugCanvas) project.remove()
 
   return { handles, svg }
 }
