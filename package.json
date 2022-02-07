@@ -2,6 +2,7 @@
   "name": "shape-compiler",
   "version": "0.0.0",
   "types": "dist",
+  "main": "dist/index.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build && npm run build:types",
@@ -13,6 +14,7 @@
     "vite": "^2.7.2"
   },
   "dependencies": {
-    "paper": "^0.12.15"
+    "paper": "^0.12.15",
+    "paperjs-offset": "^1.0.8"
   }
 }
