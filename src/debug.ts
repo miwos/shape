@@ -17,9 +17,9 @@ const renderInputOutputTrigger = ({ position, angle }: InputOutput) => {
 }
 
 const renderProp = ({ x, y }: Point, side: Side) => {
-  const offset = 17.5 * (side === 'left' ? -1 : 1)
+  // const offset = 17.5 * (side === 'left' ? -1 : 1)
   new Path.Circle({
-    center: { x: x + offset, y },
+    center: { x, y },
     radius: 7.5,
     fillColor: 'grey',
   })

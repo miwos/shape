@@ -1,5 +1,7 @@
 import { Path, Point } from 'paper/dist/paper-core'
 import { toXY } from './utils'
+// @ts-ignore
+import { OffsetUtils } from './OffsetUtils.js'
 
 export interface PropsSide {
   one: Point
@@ -70,6 +72,7 @@ const getPropPosition = (
 const getPropPositions = (
   marker: paper.Path,
   shape: paper.Path,
+  offsetShape: paper.Path,
   side: 'left' | 'right'
 ): PropsSide => {
   const intersections = shape.getIntersections(marker)
@@ -80,15 +83,31 @@ const getPropPositions = (
   const { point } = shape.getIntersections(marker)[0]
 
   return {
-    one: toXY(point),
+    one: getPropPosition(point, side, offsetShape),
     two: [
-      getPropPosition(point.add({ x: 0, y: propGap / 2 } as any), side, shape),
-      getPropPosition(point.add({ x: 0, y: -propGap / 2 } as any), side, shape),
+      getPropPosition(
+        point.add({ x: 0, y: propGap / 2 } as any),
+        side,
+        offsetShape
+      ),
+      getPropPosition(
+        point.add({ x: 0, y: -propGap / 2 } as any),
+        side,
+        offsetShape
+      ),
     ],
     three: [
-      getPropPosition(point.add({ x: 0, y: propGap } as any), side, shape),
-      toXY(point),
-      getPropPosition(point.add({ x: 0, y: -propGap } as any), side, shape),
+      getPropPosition(
+        point.add({ x: 0, y: propGap } as any),
+        side,
+        offsetShape
+      ),
+      getPropPosition(point, side, offsetShape),
+      getPropPosition(
+        point.add({ x: 0, y: -propGap } as any),
+        side,
+        offsetShape
+      ),
     ],
   }
 }
@@ -100,6 +119,17 @@ export const getProps = (project: paper.Project, shape: paper.Path) => {
   const { error } = validateMarkers(markers)
   if (error) throw new Error(error)
 
+  // Create an offset of shape that we can use as the gap between the props
+  // and the original shape.
+  const flattenedShape = shape.clone()
+  flattenedShape.flatten()
+  let offsetShape = OffsetUtils.offsetPath(flattenedShape, 20)
+  offsetShape = offsetShape.unite()
+
+  // For debugging only:
+  offsetShape.strokeColor = 'blue'
+  project.activeLayer.addChild(offsetShape)
+
   // The right side is the default side and the left side is only used if the
   // right side is full. So if only one marker is present, we expect it to be
   // the right side marker.
@@ -107,7 +137,9 @@ export const getProps = (project: paper.Project, shape: paper.Path) => {
   const [rightMarker, leftMarker] = markers
 
   return {
-    left: leftMarker && getPropPositions(leftMarker, shape, 'left'),
-    right: rightMarker && getPropPositions(rightMarker, shape, 'right'),
+    left:
+      leftMarker && getPropPositions(leftMarker, shape, offsetShape, 'left'),
+    right:
+      rightMarker && getPropPositions(rightMarker, shape, offsetShape, 'right'),
   }
 }

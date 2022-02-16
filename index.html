@@ -21,16 +21,15 @@
       import { compileShape } from './src/index'
 
       const svg = `
-      <svg width="75" height="33" viewBox="0 0 75 33" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Output">
-<path id="shape" d="M5 19C5 11.268 11.268 5 19 5H56C63.732 5 70 11.268 70 19C70 26.732 63.732 33 56 33H19C11.268 33 5 26.732 5 19Z" fill="#C4C4C4"/>
-<path id="midi-in" d="M37 10V0" stroke="black"/>
-<path id="props" d="M0 19L10 19" stroke="black"/>
-<path id="props_2" d="M65 19L75 19" stroke="black"/>
+      <svg width="180" height="120" viewBox="0 0 180 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Effect">
+<path id="shape" d="M144.618 27.757C144.618 33.2962 138.329 38.3732 127.877 42.3195C147.177 46.4058 159.875 53.3437 159.875 61.215C159.875 65.7227 155.711 69.9244 148.527 73.4596C167.532 77.56 180 84.4433 180 92.243C180 104.811 147.626 115 107.691 115C67.756 115 35.3822 104.811 35.3822 92.243C35.3822 87.7352 39.5467 83.5335 46.7309 79.9983C27.7253 75.8979 15.2574 69.0146 15.2574 61.215C15.2574 55.6757 21.5457 50.5987 31.9982 46.6525C12.6977 42.5661 0 35.6283 0 27.757C0 15.1887 32.3738 5 72.3089 5C112.244 5 144.618 15.1887 144.618 27.757Z" fill="#C4C4C4"/>
+<path id="midi-out" d="M107 110V120" stroke="#0000FF"/>
+<path id="midi-in" d="M72 10V0" stroke="#0000FF"/>
+<path id="props" d="M154.015 57.851L164.015 57.851" stroke="#00D300"/>
+<path id="props_2" d="M10.5938 63.3252L20.5938 63.3252" stroke="#00D300"/>
 </g>
 </svg>
-
-
 `
       // compileShape(svg, 'shape', document.querySelector('canvas'))
       console.log(compileShape(svg, 'shape', document.querySelector('canvas')))

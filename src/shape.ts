@@ -72,7 +72,6 @@ export const compileShape = (
   ])
 
   const size = toWidthHeight(project.view.bounds)
-  console.log({ size })
 
   if (debug) {
     renderDebugInformation(inputsOutputs, props)
