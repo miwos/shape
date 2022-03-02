@@ -132,7 +132,7 @@ export var OffsetUtils = new (function () {
               originSegment,
               'miter',
               radius,
-              4,
+              miterLimit,
               null,
               null,
               addPoint

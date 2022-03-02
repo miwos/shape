@@ -123,6 +123,7 @@ export const getProps = (project: paper.Project, shape: paper.Path) => {
   // and the original shape.
   const flattenedShape = shape.clone()
   flattenedShape.flatten()
+  flattenedShape.miterLimit = 1
   let offsetShape = OffsetUtils.offsetPath(flattenedShape, 20)
   offsetShape = offsetShape.unite()
 

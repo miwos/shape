@@ -76,7 +76,7 @@ export const getInputsOutputsAndIntersections = (
   const markers = getMarkers(project)
 
   // Start with a one-based index to be consistent with lua.
-  const indexes: Record<string, number> = { in: 1, out: 1, inout: 1 }
+  const indexes: Record<string, number> = { in: 1, out: 1 }
   const intersections: paper.Point[] = []
 
   const inputsOutputs = Object.fromEntries(
@@ -85,7 +85,17 @@ export const getInputsOutputsAndIntersections = (
       const signal = match![1] as InputOutput['signal']
       const direction = match![2] as InputOutput['direction']
 
-      const index = indexes[direction]++
+      // Todo: make this work for `inouts` in between other markers.
+      let index
+      if (direction === 'inout') {
+        index = indexes['in']
+        indexes['in']++
+        indexes['out']++
+      } else {
+        index = indexes[direction]
+        indexes[direction]++
+      }
+
       const id = `${signal}-${direction}-${index}` as InputOutput['id']
 
       const markerIntersections = shape.getIntersections(marker)
