@@ -114,7 +114,7 @@ const getPropPositions = (
 
 export const getProps = (project: paper.Project, shape: paper.Path) => {
   const markers = getMarkers(project)
-  if (markers.length === 0) return
+  if (markers.length === 0) throw new Error('No prop markers found.')
 
   const { error } = validateMarkers(markers)
   if (error) throw new Error(error)

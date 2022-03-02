@@ -1,12 +1,12 @@
 import { Color, Project } from 'paper/dist/paper-core'
-import { getInputsOutputsAndIntersections } from '.'
 import { renderDebugInformation } from './debug'
 import {
-  InputOutput,
+  getInputsOutputs,
   hideMarkers as hideInputOutputMarkers,
-} from './input-output'
-import { getProps, PropsSide, hideMarkers as hidePropMarkers } from './prop'
-import { perforatePath, removeAttributes, toWidthHeight } from './utils'
+  InputOutput,
+} from './inputsOutputs'
+import { getProps, hideMarkers as hidePropMarkers, PropsSide } from './props'
+import { cleanUpSVG, toWidthHeight } from './utils'
 
 export interface Shape {
   id: string
@@ -17,14 +17,8 @@ export interface Shape {
   props: { left: PropsSide; right: PropsSide }
 }
 
-const exportSVG = (item: paper.Item, keepAttributes: string[] = []) => {
-  const svg = item.exportSVG({ asString: true }) as string
-  return removeAttributes(
-    svg,
-    ['id', 'style', 'stroke*', 'font*', 'fill*', 'text*'],
-    keepAttributes
-  )
-}
+const exportSVG = (item: paper.Item) =>
+  cleanUpSVG(item.exportSVG({ asString: true }) as string)
 
 export const compileShape = (
   svg: string,
@@ -50,31 +44,23 @@ export const compileShape = (
     hideInputOutputMarkers(project)
     hidePropMarkers(project)
     project.view.viewSize = parent.bounds.size.round()
-    parent.position = project.view.center
   }
 
-  const props = getProps(project, path)!
-
+  parent.position = project.view.center
   const outline = path.clone()
   outline.name = 'outline'
   outline.strokeColor = new Color('black')
 
-  const { inputsOutputs, intersections } = getInputsOutputsAndIntersections(
-    project,
-    path
-  )
-  perforatePath(outline, intersections)
+  const props = getProps(project, path)
+  const inputsOutputs = getInputsOutputs(project, path)
 
   const pathSVG = exportSVG(path)
-  const outlineSVG = exportSVG(outline, [
-    'stroke-dasharray',
-    'stroke-dashoffset',
-  ])
+  const outlineSVG = exportSVG(outline)
 
   const size = toWidthHeight(project.view.bounds)
 
   if (debug) {
-    renderDebugInformation(inputsOutputs, props)
+    renderDebugInformation(outline, inputsOutputs, props)
   } else {
     project.remove()
   }

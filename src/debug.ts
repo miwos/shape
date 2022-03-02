@@ -1,10 +1,17 @@
 import { Path, Point } from 'paper/dist/paper-core'
 import { InputOutput, Shape } from '.'
+import { perforatePath } from './utils'
 
-const renderInputOutputMidi = ({ position }: InputOutput) =>
-  new Path.Circle({ radius: 6, fillColor: 'black', center: position })
+const renderInputOutputInset = ({ position }: InputOutput) =>
+  new Path.Circle({ radius: 6, fillColor: 'black', center: position.inset })
 
-const renderInputOutputTrigger = ({ position, angle }: InputOutput) => {
+const renderInputOutputTouching = ({
+  direction,
+  position,
+  angle,
+}: InputOutput) => {
+  if (direction === 'inout') return
+
   const triangle = new Path.RegularPolygon({
     sides: 3,
     radius: 1,
@@ -12,29 +19,35 @@ const renderInputOutputTrigger = ({ position, angle }: InputOutput) => {
   })
   triangle.bounds.width = 12
   triangle.bounds.height = 12
-  triangle.bounds.bottomCenter = new Point(position)
+  triangle.bounds.bottomCenter = new Point(position.touching!)
   triangle.rotate(angle - 90, triangle.bounds.bottomCenter)
 }
 
-const renderProp = ({ x, y }: Point, side: Side) => {
-  // const offset = 17.5 * (side === 'left' ? -1 : 1)
+const renderProp = ({ x, y }: Point) =>
   new Path.Circle({
     center: { x, y },
     radius: 7.5,
     fillColor: 'grey',
   })
-}
 
 export const renderDebugInformation = (
+  outline: paper.Path,
   inputsOutputs: Shape['inputsOutputs'],
   props: Shape['props']
 ) => {
-  props.left?.three.forEach((prop) => renderProp(prop, 'left'))
-  props.right?.three.forEach((prop) => renderProp(prop, 'right'))
+  props.left?.three.forEach((prop) => renderProp(prop))
+  props.right?.three.forEach((prop) => renderProp(prop))
 
-  Object.values(inputsOutputs).forEach((handle) =>
-    handle.signal === 'midi'
-      ? renderInputOutputMidi(handle)
-      : renderInputOutputTrigger(handle)
-  )
+  const holes = Object.values(inputsOutputs)
+    .map((v) => v.intersectionOffset)
+    .flat()
+
+  const { dashArray, dashOffset } = perforatePath(outline.length, holes)
+  outline.dashArray = dashArray
+  outline.dashOffset = dashOffset
+
+  Object.values(inputsOutputs).forEach((v) => {
+    renderInputOutputInset(v)
+    renderInputOutputTouching(v)
+  })
 }

@@ -1,2 +1,2 @@
-export * from './input-output'
+export * from './inputsOutputs'
 export * from './shape'

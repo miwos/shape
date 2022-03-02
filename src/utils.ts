@@ -19,11 +19,7 @@ export const removeAttributes = (
 
 export const cleanUpSVG = (svg: string) => {
   svg = replaceIdWithClass(svg)
-
-  const remove = ['style', 'stroke*', 'font*', 'fill*', 'text*']
-  const keep = ['stroke-dasharray', 'stroke-dashoffset']
-  svg = removeAttributes(svg, remove, keep)
-
+  svg = removeAttributes(svg, ['style', 'stroke*', 'font*', 'fill*', 'text*'])
   return svg
 }
 
@@ -35,24 +31,23 @@ export const toWidthHeight = ({ width, height }: paper.Rectangle) => ({
 })
 
 export const perforatePath = (
-  path: paper.Path,
-  points: { x: number; y: number }[],
+  pathLength: number,
+  holeOffsets: number[],
   holeWidth = 24
 ) => {
-  const offsets = points.map((hole) => path.getOffsetOf(hole as any))
-  const sorted = offsets.sort((a, b) => a - b)
+  const sortedOffsets = holeOffsets.sort((a, b) => a - b)
 
   let dashOffset = 0
   const dashArray = []
 
   let lastOffset = 0
-  for (const offset of sorted) {
+  for (const offset of sortedOffsets) {
     const holeStart = offset - holeWidth / 2
     const holeEnd = offset + holeWidth / 2
     dashArray.push(holeStart - lastOffset, holeWidth)
     lastOffset = holeEnd
   }
-  dashArray.push(path.length - lastOffset)
+  dashArray.push(pathLength - lastOffset)
 
   const [firstDash] = dashArray
   if (firstDash < 0) {
@@ -69,6 +64,5 @@ export const perforatePath = (
     dashArray[dashArray.length - 1] *= -1
   }
 
-  path.dashArray = dashArray
-  path.dashOffset = dashOffset
+  return { dashArray, dashOffset }
 }

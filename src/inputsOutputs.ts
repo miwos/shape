@@ -1,15 +1,18 @@
 import { Path } from 'paper/dist/paper-core'
 import { toXY } from './utils'
 
-export const markerRegExp = new RegExp(/^(midi|trigger)-(inout|in|out)/)
+export const markerRegExp = new RegExp(/^(inout|in|out)([_-].*)?$/)
 
 export interface InputOutput {
-  id: `${InputOutput['signal']}-${InputOutput['direction']}-${InputOutput['index']}`
+  id: `${InputOutput['direction']}-${InputOutput['index']}`
   index: number
-  signal: 'midi' | 'trigger'
   direction: 'in' | 'out' | 'inout'
   angle: number
-  position: { x: number; y: number }
+  intersectionOffset: number | number[]
+  position: {
+    touching?: Point
+    inset: Point
+  }
 }
 
 const validateMarker = (
@@ -24,7 +27,6 @@ const validateMarker = (
   }
 
   let error
-
   if (direction === 'inout') {
     if (intersectionsCount < 2)
       error = `Marker '${marker.name}' needs two intersections with shape but has only ${intersectionsCount}.`
@@ -50,18 +52,18 @@ const getMarkers = (project: paper.Project) =>
 export const hideMarkers = (project: paper.Project) =>
   getMarkers(project).forEach((v) => (v.visible = false))
 
-const getMidiPosition = (vector: paper.Point, intersection: paper.Point) =>
+const getInsetPosition = (vector: paper.Point, intersection: paper.Point) =>
   intersection
     // @ts-ignore (wrong paper types)
     .add(vector.multiply(14))
     .round()
 
-const getTriggerPosition = (
+const getTouchingPosition = (
   vector: paper.Point,
   intersection: paper.Point,
   shape: paper.Path
 ) => {
-  // @ts-ignore
+  // @ts-ignore (wrong paper types)
   const offset = vector.rotate(-90).multiply(6)
   const p = intersection.add(offset)
   const line = new Path.Line(p, p.add(vector.multiply(10)))
@@ -69,21 +71,18 @@ const getTriggerPosition = (
   return touchingPoint.subtract(offset)
 }
 
-export const getInputsOutputsAndIntersections = (
+export const getInputsOutputs = (
   project: paper.Project,
   shape: paper.Path
-) => {
+): Record<InputOutput['id'], InputOutput> => {
   const markers = getMarkers(project)
-
   // Start with a one-based index to be consistent with lua.
   const indexes: Record<string, number> = { in: 1, out: 1 }
-  const intersections: paper.Point[] = []
 
   const inputsOutputs = Object.fromEntries(
     markers.map((marker) => {
       const match = marker.name.match(markerRegExp)
-      const signal = match![1] as InputOutput['signal']
-      const direction = match![2] as InputOutput['direction']
+      const direction = match![1] as InputOutput['direction']
 
       // Todo: make this work for `inouts` in between other markers.
       let index
@@ -96,8 +95,7 @@ export const getInputsOutputsAndIntersections = (
         indexes[direction]++
       }
 
-      const id = `${signal}-${direction}-${index}` as InputOutput['id']
-
+      const id = `${direction}-${index}` as InputOutput['id']
       const markerIntersections = shape.getIntersections(marker)
       const { length } = markerIntersections
       const { firstSegment, lastSegment } = marker
@@ -107,29 +105,35 @@ export const getInputsOutputsAndIntersections = (
 
       const vector = firstSegment.point.subtract(lastSegment.point).normalize()
       const angle = +vector.angle.toFixed(2)
-      let position = null
+      let position: InputOutput['position']
+      let intersectionOffset
 
       if (direction === 'inout') {
         const a = markerIntersections[0].point
         const b = markerIntersections[length - 1].point
-        intersections.push(a, b)
-        position = a.add(b.subtract(a).multiply(0.5))
+        intersectionOffset = [shape.getOffsetOf(a), shape.getOffsetOf(b)]
+        position = { inset: toXY(a.add(b.subtract(a).multiply(0.5))) }
       } else {
         const { point } = markerIntersections[0]
-        if (signal === 'midi') intersections.push(point)
+        intersectionOffset = shape.getOffsetOf(point)
 
-        position =
-          signal === 'midi'
-            ? getMidiPosition(vector, point)
-            : getTriggerPosition(vector, point, shape)
+        position = {
+          inset: toXY(getInsetPosition(vector, point)),
+          touching: toXY(getTouchingPosition(vector, point, shape)),
+        }
       }
 
-      // Make sure we only return x and y values and not a full `paper.Point`.
-      position = toXY(position)
-      const inputOutput = { id, index, signal, direction, angle, position }
+      const inputOutput = {
+        id,
+        index,
+        direction,
+        angle,
+        intersectionOffset,
+        position,
+      }
       return [id, inputOutput]
     })
   )
 
-  return { inputsOutputs, intersections }
+  return inputsOutputs
 }
