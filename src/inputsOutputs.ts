@@ -3,21 +3,22 @@ import { toXY } from './utils'
 
 export const markerRegExp = new RegExp(/^(inout|in|out)([_-].*)?$/)
 
-export interface InputOutput {
-  id: `${InputOutput['direction']}-${InputOutput['index']}`
+export interface ShapeInputOutput {
+  id: `${ShapeInputOutput['direction']}-${ShapeInputOutput['index']}`
   index: number
   direction: 'in' | 'out' | 'inout'
   angle: number
-  intersectionOffset: number | number[]
+  offset: number
   position: {
     touching?: Point
     inset: Point
   }
+  isInOut?: boolean
 }
 
 const validateMarker = (
   marker: paper.Path,
-  direction: InputOutput['direction'],
+  direction: ShapeInputOutput['direction'],
   intersectionsCount: number
 ) => {
   if (marker.segments.length !== 2) {
@@ -63,77 +64,84 @@ const getTouchingPosition = (
   intersection: paper.Point,
   shape: paper.Path
 ) => {
+  // We make sure that the icon is fitting on the shape and no gap is left. For
+  // curved shapes, we therefore need to push the icon into the shape a bit.
+  // We first determine where the bottom right corner of the icon would be.
   // @ts-ignore (wrong paper types)
-  const offset = vector.rotate(-90).multiply(6)
-  const p = intersection.add(offset)
-  const line = new Path.Line(p, p.add(vector.multiply(10)))
-  const touchingPoint = shape.getIntersections(line)[0].point
-  return touchingPoint.subtract(offset)
+  const iconBaseHalf = vector.rotate(-90).multiply(6)
+  const iconBaseRight = intersection.add(iconBaseHalf)
+  // Then we create a line at that position pointing into the shape.
+  const line = new Path.Line(
+    iconBaseRight.subtract(vector.multiply(10)),
+    iconBaseRight.add(vector.multiply(10))
+  )
+  // Where the line intersects with the shape tells us how much we have to push
+  // the icon into the shape.
+  const touchingPointRight = shape.getIntersections(line)[0].point
+  const touchingPointCenter = touchingPointRight.subtract(iconBaseHalf)
+  return touchingPointCenter
 }
 
 export const getInputsOutputs = (
   project: paper.Project,
   shape: paper.Path
-): Record<InputOutput['id'], InputOutput> => {
+): Record<ShapeInputOutput['id'], ShapeInputOutput> => {
   const markers = getMarkers(project)
   // Start with a one-based index to be consistent with lua.
   const indexes: Record<string, number> = { in: 1, out: 1 }
 
-  const inputsOutputs = Object.fromEntries(
-    markers.map((marker) => {
-      const match = marker.name.match(markerRegExp)
-      const direction = match![1] as InputOutput['direction']
+  const inputsOutputs: Record<ShapeInputOutput['id'], ShapeInputOutput> = {}
+  for (const marker of markers) {
+    const match = marker.name.match(markerRegExp)
+    const direction = match![1] as ShapeInputOutput['direction']
 
-      // Todo: make this work for `inouts` in between other markers.
-      let index
-      if (direction === 'inout') {
-        index = indexes['in']
-        indexes['in']++
-        indexes['out']++
-      } else {
-        index = indexes[direction]
-        indexes[direction]++
+    const markerIntersections = shape.getIntersections(marker)
+    const { length } = markerIntersections
+    const { firstSegment, lastSegment } = marker
+
+    const { error } = validateMarker(marker, direction, length)
+    if (error) throw new Error(error)
+
+    const vector = firstSegment.point.subtract(lastSegment.point).normalize()
+    const markerAngle = +vector.angle.toFixed(2)
+
+    if (direction === 'inout') {
+      // A marker with direction `inout` is basically a way to add a special
+      // input and output that share the same position. So for each `inout`
+      // we add an input and and output.
+      const a = markerIntersections[0].point
+      const b = markerIntersections[length - 1].point
+      const position = { inset: toXY(a.add(b.subtract(a).multiply(0.5))) }
+      const isInOut = true
+
+      let index = indexes['in']++
+      let id = `in-${index}` as ShapeInputOutput['id']
+      let offset = shape.getOffsetOf(b)
+      let angle = markerAngle + 180
+      const input = { id, index, direction, position, angle, offset, isInOut }
+
+      index = indexes['out']++
+      id = `out-${index}` as ShapeInputOutput['id']
+      offset = shape.getOffsetOf(a)
+      angle = markerAngle
+      const output = { id, index, direction, position, angle, offset, isInOut }
+
+      inputsOutputs[input.id] = input
+      inputsOutputs[output.id] = output
+    } else {
+      const index = indexes[direction]++
+      const id = `${direction}-${index}` as ShapeInputOutput['id']
+      const { point } = markerIntersections[0]
+      const offset = shape.getOffsetOf(point)
+      const position = {
+        inset: toXY(getInsetPosition(vector, point)),
+        touching: toXY(getTouchingPosition(vector, point, shape)),
       }
+      const angle = markerAngle
 
-      const id = `${direction}-${index}` as InputOutput['id']
-      const markerIntersections = shape.getIntersections(marker)
-      const { length } = markerIntersections
-      const { firstSegment, lastSegment } = marker
-
-      const { error } = validateMarker(marker, direction, length)
-      if (error) throw new Error(error)
-
-      const vector = firstSegment.point.subtract(lastSegment.point).normalize()
-      const angle = +vector.angle.toFixed(2)
-      let position: InputOutput['position']
-      let intersectionOffset
-
-      if (direction === 'inout') {
-        const a = markerIntersections[0].point
-        const b = markerIntersections[length - 1].point
-        intersectionOffset = [shape.getOffsetOf(a), shape.getOffsetOf(b)]
-        position = { inset: toXY(a.add(b.subtract(a).multiply(0.5))) }
-      } else {
-        const { point } = markerIntersections[0]
-        intersectionOffset = shape.getOffsetOf(point)
-
-        position = {
-          inset: toXY(getInsetPosition(vector, point)),
-          touching: toXY(getTouchingPosition(vector, point, shape)),
-        }
-      }
-
-      const inputOutput = {
-        id,
-        index,
-        direction,
-        angle,
-        intersectionOffset,
-        position,
-      }
-      return [id, inputOutput]
-    })
-  )
+      inputsOutputs[id] = { id, index, direction, angle, offset, position }
+    }
+  }
 
   return inputsOutputs
 }

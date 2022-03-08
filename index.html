@@ -21,15 +21,15 @@
       import { compileShape } from './src/index'
 
       const svg = `
-      <svg width="75" height="57" viewBox="0 0 75 57" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Transform">
-<path id="shape" d="M49.5 4.84628L70 28.5001L49.5 52.154L25.5 52.154L5 28.5001L25.5 4.84628H49.5Z" fill="#C4C4C4"/>
-<path id="inout" d="M37.5 57V0" stroke="#0000FF"/>
+      <svg width="93" height="57" viewBox="0 0 93 57" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="TransformWith">
+<path id="shape" d="M79.8609 4.84628L88.0352 27.4102L49.5 52.154H25.65L5.14996 28.5001L25.65 4.84628H79.8609Z" fill="#C4C4C4"/>
 <path id="props" d="M0 28.5L10 28.5" stroke="#00D300"/>
-<path id="props_2" d="M65 28.5L75 28.5" stroke="#00D300"/>
+<path id="props_2" d="M92.9018 27.4109L82.9018 27.4109" stroke="#00D300"/>
+<path id="in" d="M79.2464 17.8386L88.6434 14.4184" stroke="#0000FF"/>
+<path id="inout" d="M37.5 57V0" stroke="#0000FF"/>
 </g>
 </svg>
-
 `
       // compileShape(svg, 'shape', document.querySelector('canvas'))
       console.log(compileShape(svg, 'shape', document.querySelector('canvas')))
