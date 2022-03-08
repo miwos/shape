@@ -122,8 +122,10 @@ export const getProps = (project: paper.Project, shape: paper.Path) => {
   // Create an offset of shape that we can use as the gap between the props
   // and the original shape.
   const flattenedShape = shape.clone()
+  // Flattening seems necessary to prevent some offsetting edge cases.
   flattenedShape.flatten()
-  flattenedShape.miterLimit = 1
+  // A round stroke join seems to yield the most consistent results.
+  flattenedShape.strokeJoin = 'round'
   let offsetShape = OffsetUtils.offsetPath(flattenedShape, 20)
   offsetShape = offsetShape.unite()
 
