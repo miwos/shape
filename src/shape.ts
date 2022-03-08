@@ -3,7 +3,7 @@ import { renderDebugInformation } from './debug'
 import {
   getInputsOutputs,
   hideMarkers as hideInputOutputMarkers,
-  InputOutput,
+  ShapeInputOutput,
 } from './inputsOutputs'
 import { getProps, hideMarkers as hidePropMarkers, PropsSide } from './props'
 import { cleanUpSVG, toWidthHeight } from './utils'
@@ -12,8 +12,9 @@ export interface Shape {
   id: string
   path: string
   outline: string
+  length: number
   size: { width: number; height: number }
-  inputsOutputs: Record<InputOutput['id'], InputOutput>
+  inputsOutputs: Record<ShapeInputOutput['id'], ShapeInputOutput>
   props: { left: PropsSide; right: PropsSide }
 }
 
@@ -50,6 +51,7 @@ export const compileShape = (
   const outline = path.clone()
   outline.name = 'outline'
   outline.strokeColor = new Color('black')
+  const { length } = outline
 
   const props = getProps(project, path)
   const inputsOutputs = getInputsOutputs(project, path)
@@ -65,5 +67,13 @@ export const compileShape = (
     project.remove()
   }
 
-  return { id, inputsOutputs, props, size, path: pathSVG, outline: outlineSVG }
+  return {
+    id,
+    inputsOutputs,
+    props,
+    size,
+    length,
+    path: pathSVG,
+    outline: outlineSVG,
+  }
 }

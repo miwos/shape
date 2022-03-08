@@ -1,15 +1,15 @@
 import { Path, Point } from 'paper/dist/paper-core'
-import { InputOutput, Shape } from '.'
+import { ShapeInputOutput, Shape } from '.'
 import { perforatePath } from './utils'
 
-const renderInputOutputInset = ({ position }: InputOutput) =>
+const renderInputOutputInset = ({ position }: ShapeInputOutput) =>
   new Path.Circle({ radius: 6, fillColor: 'black', center: position.inset })
 
 const renderInputOutputTouching = ({
   direction,
   position,
   angle,
-}: InputOutput) => {
+}: ShapeInputOutput) => {
   if (direction === 'inout') return
 
   const triangle = new Path.RegularPolygon({
@@ -38,9 +38,7 @@ export const renderDebugInformation = (
   props.left?.three.forEach((prop) => renderProp(prop))
   props.right?.three.forEach((prop) => renderProp(prop))
 
-  const holes = Object.values(inputsOutputs)
-    .map((v) => v.intersectionOffset)
-    .flat()
+  const holes = Object.values(inputsOutputs).map((v) => v.offset)
 
   const { dashArray, dashOffset } = perforatePath(outline.length, holes)
   outline.dashArray = dashArray
