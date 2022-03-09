@@ -14,7 +14,7 @@ export interface Shape {
   outline: string
   length: number
   size: { width: number; height: number }
-  inputsOutputs: Record<ShapeInputOutput['id'], ShapeInputOutput>
+  inputsOutputs: Map<ShapeInputOutput['id'], ShapeInputOutput>
   props: { left: PropsSide; right: PropsSide }
 }
 

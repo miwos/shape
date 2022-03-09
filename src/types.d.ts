@@ -1,6 +1,6 @@
-interface Point {
+export interface Point {
   x: number
   y: number
 }
 
-type Side = 'left' | 'right'
+export type Side = 'left' | 'right'

@@ -1,16 +1,17 @@
 import { Path, Point } from 'paper/dist/paper-core'
 import { ShapeInputOutput, Shape } from '.'
+import { Point as PointType } from './types'
 import { perforatePath } from './utils'
 
 const renderInputOutputInset = ({ position }: ShapeInputOutput) =>
   new Path.Circle({ radius: 6, fillColor: 'black', center: position.inset })
 
 const renderInputOutputTouching = ({
-  direction,
   position,
   angle,
+  isInOut,
 }: ShapeInputOutput) => {
-  if (direction === 'inout') return
+  if (isInOut) return
 
   const triangle = new Path.RegularPolygon({
     sides: 3,
@@ -23,7 +24,7 @@ const renderInputOutputTouching = ({
   triangle.rotate(angle - 90, triangle.bounds.bottomCenter)
 }
 
-const renderProp = ({ x, y }: Point) =>
+const renderProp = ({ x, y }: PointType) =>
   new Path.Circle({
     center: { x, y },
     radius: 7.5,

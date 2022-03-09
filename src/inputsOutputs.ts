@@ -1,12 +1,15 @@
 import { Path } from 'paper/dist/paper-core'
+import { Point } from './types'
 import { toXY } from './utils'
 
 export const markerRegExp = new RegExp(/^(inout|in|out)([_-].*)?$/)
 
+export type MarkerDirection = 'in' | 'out' | 'inout'
+
 export interface ShapeInputOutput {
   id: `${ShapeInputOutput['direction']}-${ShapeInputOutput['index']}`
   index: number
-  direction: 'in' | 'out' | 'inout'
+  direction: 'in' | 'out'
   angle: number
   offset: number
   position: {
@@ -18,7 +21,7 @@ export interface ShapeInputOutput {
 
 const validateMarker = (
   marker: paper.Path,
-  direction: ShapeInputOutput['direction'],
+  direction: MarkerDirection,
   intersectionsCount: number
 ) => {
   if (marker.segments.length !== 2) {
@@ -85,15 +88,15 @@ const getTouchingPosition = (
 export const getInputsOutputs = (
   project: paper.Project,
   shape: paper.Path
-): Record<ShapeInputOutput['id'], ShapeInputOutput> => {
+): Map<ShapeInputOutput['id'], ShapeInputOutput> => {
   const markers = getMarkers(project)
   // Start with a one-based index to be consistent with lua.
   const indexes: Record<string, number> = { in: 1, out: 1 }
 
-  const inputsOutputs: Record<ShapeInputOutput['id'], ShapeInputOutput> = {}
+  const inputsOutputs = new Map<ShapeInputOutput['id'], ShapeInputOutput>()
   for (const marker of markers) {
     const match = marker.name.match(markerRegExp)
-    const direction = match![1] as ShapeInputOutput['direction']
+    const direction = match![1] as MarkerDirection
 
     const markerIntersections = shape.getIntersections(marker)
     const { length } = markerIntersections
@@ -116,18 +119,20 @@ export const getInputsOutputs = (
 
       let index = indexes['in']++
       let id = `in-${index}` as ShapeInputOutput['id']
+      let direction = 'in' as ShapeInputOutput['direction']
       let offset = shape.getOffsetOf(b)
       let angle = markerAngle + 180
       const input = { id, index, direction, position, angle, offset, isInOut }
 
       index = indexes['out']++
-      id = `out-${index}` as ShapeInputOutput['id']
+      id = `out-${index}`
+      direction = 'out'
       offset = shape.getOffsetOf(a)
       angle = markerAngle
       const output = { id, index, direction, position, angle, offset, isInOut }
 
-      inputsOutputs[input.id] = input
-      inputsOutputs[output.id] = output
+      inputsOutputs.set(input.id, input)
+      inputsOutputs.set(output.id, output)
     } else {
       const index = indexes[direction]++
       const id = `${direction}-${index}` as ShapeInputOutput['id']
@@ -139,7 +144,7 @@ export const getInputsOutputs = (
       }
       const angle = markerAngle
 
-      inputsOutputs[id] = { id, index, direction, angle, offset, position }
+      inputsOutputs.set(id, { id, index, direction, angle, offset, position })
     }
   }
 
