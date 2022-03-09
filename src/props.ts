@@ -1,13 +1,13 @@
 import { Path, Point } from 'paper/dist/paper-core'
-import { toXY } from './utils'
 // @ts-ignore
 import { OffsetUtils } from './OffsetUtils.js'
-import { Point as PointType } from './types'
+import { PointXY } from './types'
+import { toXY } from './utils'
 
 export interface PropsSide {
-  one: PointType
-  two: PointType[]
-  three: PointType[]
+  one: PointXY
+  two: PointXY[]
+  three: PointXY[]
 }
 
 const propGap = 30 //px

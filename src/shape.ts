@@ -14,7 +14,8 @@ export interface Shape {
   outline: string
   length: number
   size: { width: number; height: number }
-  inputsOutputs: Map<ShapeInputOutput['id'], ShapeInputOutput>
+  inputs: ShapeInputOutput[]
+  outputs: ShapeInputOutput[]
   props: { left: PropsSide; right: PropsSide }
 }
 
@@ -54,7 +55,7 @@ export const compileShape = (
   const { length } = outline
 
   const props = getProps(project, path)
-  const inputsOutputs = getInputsOutputs(project, path)
+  const { inputs, outputs } = getInputsOutputs(project, path)
 
   const pathSVG = exportSVG(path)
   const outlineSVG = exportSVG(outline)
@@ -62,17 +63,18 @@ export const compileShape = (
   const size = toWidthHeight(project.view.bounds)
 
   if (debug) {
-    renderDebugInformation(outline, inputsOutputs, props)
+    renderDebugInformation(outline, inputs, outputs, props)
   } else {
     project.remove()
   }
 
   return {
     id,
-    inputsOutputs,
     props,
     size,
     length,
+    inputs,
+    outputs,
     path: pathSVG,
     outline: outlineSVG,
   }

@@ -1,6 +1,6 @@
 import { Path, Point } from 'paper/dist/paper-core'
 import { ShapeInputOutput, Shape } from '.'
-import { Point as PointType } from './types'
+import { PointXY } from './types'
 import { perforatePath } from './utils'
 
 const renderInputOutputInset = ({ position }: ShapeInputOutput) =>
@@ -24,7 +24,7 @@ const renderInputOutputTouching = ({
   triangle.rotate(angle - 90, triangle.bounds.bottomCenter)
 }
 
-const renderProp = ({ x, y }: PointType) =>
+const renderProp = ({ x, y }: PointXY) =>
   new Path.Circle({
     center: { x, y },
     radius: 7.5,
@@ -33,19 +33,20 @@ const renderProp = ({ x, y }: PointType) =>
 
 export const renderDebugInformation = (
   outline: paper.Path,
-  inputsOutputs: Shape['inputsOutputs'],
+  inputs: Shape['inputs'],
+  outputs: Shape['outputs'],
   props: Shape['props']
 ) => {
   props.left?.three.forEach((prop) => renderProp(prop))
   props.right?.three.forEach((prop) => renderProp(prop))
 
-  const holes = Object.values(inputsOutputs).map((v) => v.offset)
-
+  const inputsOutputs = [...inputs, ...outputs]
+  const holes = inputsOutputs.map((v) => v.offset)
   const { dashArray, dashOffset } = perforatePath(outline.length, holes)
   outline.dashArray = dashArray
   outline.dashOffset = dashOffset
 
-  Object.values(inputsOutputs).forEach((v) => {
+  inputsOutputs.forEach((v) => {
     renderInputOutputInset(v)
     renderInputOutputTouching(v)
   })
