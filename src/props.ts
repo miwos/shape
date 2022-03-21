@@ -87,25 +87,25 @@ const getPropPositions = (
     one: getPropPosition(point, side, offsetShape),
     two: [
       getPropPosition(
-        point.add({ x: 0, y: propGap / 2 } as any),
+        point.add({ x: 0, y: -propGap / 2 } as any),
         side,
         offsetShape
       ),
       getPropPosition(
-        point.add({ x: 0, y: -propGap / 2 } as any),
+        point.add({ x: 0, y: propGap / 2 } as any),
         side,
         offsetShape
       ),
     ],
     three: [
       getPropPosition(
-        point.add({ x: 0, y: propGap } as any),
+        point.add({ x: 0, y: -propGap } as any),
         side,
         offsetShape
       ),
       getPropPosition(point, side, offsetShape),
       getPropPosition(
-        point.add({ x: 0, y: -propGap } as any),
+        point.add({ x: 0, y: propGap } as any),
         side,
         offsetShape
       ),
