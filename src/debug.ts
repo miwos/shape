@@ -1,4 +1,4 @@
-import { Path, Point } from 'paper/dist/paper-core'
+import { Path, Point, PointText } from 'paper/dist/paper-core'
 import { ShapeInputOutput, Shape } from '.'
 import { PointXY } from './types'
 import { perforatePath } from './utils'
@@ -24,12 +24,17 @@ const renderInputOutputTouching = ({
   triangle.rotate(angle - 90, triangle.bounds.bottomCenter)
 }
 
-const renderProp = ({ x, y }: PointXY) =>
+const renderProp = ({ x, y }: PointXY, index: number) => {
   new Path.Circle({
     center: { x, y },
     radius: 7.5,
     fillColor: 'grey',
   })
+  new PointText({
+    point: { x: x + 10, y },
+    content: index + 1,
+  })
+}
 
 export const renderDebugInformation = (
   outline: paper.Path,
@@ -37,8 +42,8 @@ export const renderDebugInformation = (
   outputs: Shape['outputs'],
   props: Shape['props']
 ) => {
-  props.left?.three.forEach((prop) => renderProp(prop))
-  props.right?.three.forEach((prop) => renderProp(prop))
+  props.left?.three.forEach((prop, index) => renderProp(prop, index + 3))
+  props.right?.three.forEach((prop, index) => renderProp(prop, index))
 
   const inputsOutputs = [...inputs, ...outputs]
   const holes = inputsOutputs.map((v) => v.offset)
