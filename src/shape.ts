@@ -5,6 +5,11 @@ import {
   hideMarkers as hideInputOutputMarkers,
   ShapeInputOutput,
 } from './inputsOutputs'
+import {
+  getLabels,
+  ShapeLabel,
+  hideMarkers as hideLabelMarkers,
+} from './labels'
 import { getProps, hideMarkers as hidePropMarkers, PropsSide } from './props'
 import { cleanUpSVG, toWidthHeight } from './utils'
 
@@ -17,6 +22,7 @@ export interface Shape {
   inputs: ShapeInputOutput[]
   outputs: ShapeInputOutput[]
   props: { left: PropsSide; right: PropsSide }
+  labels: ShapeLabel[]
 }
 
 const exportSVG = (item: paper.Item) =>
@@ -45,6 +51,7 @@ export const compileShape = (
   if (!debug) {
     hideInputOutputMarkers(project)
     hidePropMarkers(project)
+    hideLabelMarkers(project)
     project.view.viewSize = parent.bounds.size.round()
   }
 
@@ -56,6 +63,7 @@ export const compileShape = (
 
   const props = getProps(project, path)
   const { inputs, outputs } = getInputsOutputs(project, path)
+  const labels = getLabels(project)
 
   const pathSVG = exportSVG(path)
   const outlineSVG = exportSVG(outline)
@@ -63,7 +71,7 @@ export const compileShape = (
   const size = toWidthHeight(project.view.bounds)
 
   if (debug) {
-    renderDebugInformation(outline, inputs, outputs, props)
+    renderDebugInformation(outline, inputs, outputs, props, labels)
   } else {
     project.remove()
   }
@@ -75,6 +83,7 @@ export const compileShape = (
     length,
     inputs,
     outputs,
+    labels,
     path: pathSVG,
     outline: outlineSVG,
   }

@@ -2,7 +2,7 @@ import { Path } from 'paper/dist/paper-core'
 import { PointXY } from './types'
 import { toXY } from './utils'
 
-export const markerRegExp = new RegExp(/^(inout|in|out)([_-].*)?$/)
+export const markerRegExp = new RegExp(/^(inout|in|out)([ _-].*)?$/)
 
 export type MarkerDirection = 'in' | 'out' | 'inout'
 

@@ -1,5 +1,6 @@
 import { Path, Point, PointText } from 'paper/dist/paper-core'
 import { ShapeInputOutput, Shape } from '.'
+import { ShapeLabel } from './labels'
 import { PointXY } from './types'
 import { perforatePath } from './utils'
 
@@ -36,11 +37,22 @@ const renderProp = ({ x, y }: PointXY, index: number) => {
   })
 }
 
+const renderLabel = (label: ShapeLabel) => {
+  console.log(label)
+  const text = new PointText({
+    point: label.position,
+    content: 'label',
+  })
+  // text.pivot = text.bounds.bottomLeft
+  text.rotate(label.angle - 180, label.position as any)
+}
+
 export const renderDebugInformation = (
   outline: paper.Path,
   inputs: Shape['inputs'],
   outputs: Shape['outputs'],
-  props: Shape['props']
+  props: Shape['props'],
+  labels: Shape['labels']
 ) => {
   props.left?.three.forEach((prop, index) => renderProp(prop, index + 3))
   props.right?.three.forEach((prop, index) => renderProp(prop, index))
@@ -55,4 +67,6 @@ export const renderDebugInformation = (
     renderInputOutputInset(v)
     renderInputOutputTouching(v)
   })
+
+  labels.forEach(renderLabel)
 }

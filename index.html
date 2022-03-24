@@ -21,15 +21,20 @@
       import { compileShape } from './src/index'
 
       const svg = `
-      <svg width="93" height="57" viewBox="0 0 93 57" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="TransformWith">
-<path id="shape" d="M79.8609 4.84628L88.0352 27.4102L49.5 52.154H25.65L5.14996 28.5001L25.65 4.84628H79.8609Z" fill="#C4C4C4"/>
-<path id="props" d="M0 28.5L10 28.5" stroke="#00D300"/>
-<path id="props_2" d="M92.9018 27.4109L82.9018 27.4109" stroke="#00D300"/>
-<path id="in" d="M79.2464 17.8386L88.6434 14.4184" stroke="#0000FF"/>
-<path id="inout" d="M37.5 57V0" stroke="#0000FF"/>
+      <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Convert">
+<path id="shape" fill-rule="evenodd" clip-rule="evenodd" d="M41 31H5V7H53C59.6274 7 65 12.3726 65 19V67H41V31Z" fill="#C4C4C4"/>
+<path id="props" d="M36 37L46 37" stroke="#00D300"/>
+<path id="props_2" d="M60 37L70 37" stroke="#00D300"/>
+<path id="out" d="M53 62V72" stroke="#0000FF"/>
+<path id="in" d="M10 19L0 19" stroke="#0000FF"/>
+<path id="label align=right" d="M71 17V67" stroke="#777777"/>
+<path id="label" d="M5 1H54" stroke="#777777"/>
 </g>
 </svg>
+
+
+
 `
       // compileShape(svg, 'shape', document.querySelector('canvas'))
       console.log(compileShape(svg, 'shape', document.querySelector('canvas')))
