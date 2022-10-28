@@ -10,11 +10,10 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "typescript": "^4.4.4",
-    "vite": "^2.7.2"
+    "typescript": "^4.8.4",
+    "vite": "^3.2.1"
   },
   "dependencies": {
-    "paper": "^0.12.15",
-    "paperjs-offset": "^1.0.8"
+    "paper": "^0.12.16"
   }
 }
