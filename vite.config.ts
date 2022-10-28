@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import raw from 'vite-plugin-raw'
 
 export default defineConfig({
   build: {
@@ -8,4 +9,5 @@ export default defineConfig({
       fileName: () => `index.js`,
     },
   },
+  plugins: [raw({ match: /\.svg$/ })],
 })

@@ -1,18 +1,12 @@
-import { Path, Point, PointText } from 'paper/dist/paper-core'
-import { ShapeInputOutput, Shape } from '.'
-import { ShapeLabel } from './labels'
-import { PointXY } from './types'
+import { Path, Point as PaperPoint, PointText } from 'paper/dist/paper-core'
+import { Point, Shape, ShapeConnector, ShapeLabel } from './types'
 import { perforatePath } from './utils'
 
-const renderInputOutputInset = ({ position }: ShapeInputOutput) =>
+const renderConnectorInset = ({ position }: ShapeConnector) =>
   new Path.Circle({ radius: 6, fillColor: 'black', center: position.inset })
 
-const renderInputOutputTouching = ({
-  position,
-  angle,
-  isInOut,
-}: ShapeInputOutput) => {
-  if (isInOut) return
+const renderConnectorTouching = ({ position, angle, thru }: ShapeConnector) => {
+  if (thru) return
 
   const triangle = new Path.RegularPolygon({
     sides: 3,
@@ -21,11 +15,11 @@ const renderInputOutputTouching = ({
   })
   triangle.bounds.width = 12
   triangle.bounds.height = 12
-  triangle.bounds.bottomCenter = new Point(position.touching!)
+  triangle.bounds.bottomCenter = new PaperPoint(position.touching!)
   triangle.rotate(angle - 90, triangle.bounds.bottomCenter)
 }
 
-const renderProp = ({ x, y }: PointXY, index: number) => {
+const renderProp = ({ x, y }: Point, index: number) => {
   new Path.Circle({
     center: { x, y },
     radius: 7.5,
@@ -43,7 +37,6 @@ const renderLabel = (label: ShapeLabel) => {
     point: label.position,
     content: 'label',
   })
-  // text.pivot = text.bounds.bottomLeft
   text.rotate(label.angle - 180, label.position as any)
 }
 
@@ -64,8 +57,8 @@ export const renderDebugInformation = (
   outline.dashOffset = dashOffset
 
   inputsOutputs.forEach((v) => {
-    renderInputOutputInset(v)
-    renderInputOutputTouching(v)
+    renderConnectorInset(v)
+    renderConnectorTouching(v)
   })
 
   labels.forEach(renderLabel)

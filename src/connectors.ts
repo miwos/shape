@@ -1,34 +1,23 @@
 import { Path } from 'paper/dist/paper-core'
-import { PointXY } from './types'
-import { toXY } from './utils'
+import { ShapeConnector } from './types'
+import { toPoint } from './utils'
 
-export const markerRegExp = new RegExp(/^(inout|in|out)([ _-].*)?$/)
+export const markerRegExp = new RegExp(/^(in|out|thru)([ _-].*)?$/)
 
-export type MarkerDirection = 'in' | 'out' | 'inout'
-
-export interface ShapeInputOutput {
-  angle: number
-  offset: number
-  position: {
-    touching?: PointXY
-    inset: PointXY
-  }
-  isInOut?: boolean
-}
+export type MarkerDirection = 'in' | 'out' | 'thru'
 
 const validateMarker = (
   marker: paper.Path,
   direction: MarkerDirection,
   intersectionsCount: number
 ) => {
-  if (marker.segments.length !== 2) {
+  if (marker.segments.length !== 2)
     console.warn(
       `Marker '${marker.name}' should only have two segments but has ${marker.segments.length}.`
     )
-  }
 
   let error
-  if (direction === 'inout') {
+  if (direction === 'thru') {
     if (intersectionsCount < 2)
       error = `Marker '${marker.name}' needs two intersections with shape but has only ${intersectionsCount}.`
   } else {
@@ -50,14 +39,8 @@ const getMarkers = (project: paper.Project) =>
     recursive: true,
   }) as paper.Path[]
 
-export const hideMarkers = (project: paper.Project) =>
-  getMarkers(project).forEach((v) => (v.visible = false))
-
 const getInsetPosition = (vector: paper.Point, intersection: paper.Point) =>
-  intersection
-    // @ts-ignore (wrong paper types)
-    .add(vector.multiply(14))
-    .round()
+  intersection.add(vector.multiply(14)).round()
 
 const getTouchingPosition = (
   vector: paper.Point,
@@ -67,7 +50,6 @@ const getTouchingPosition = (
   // We make sure that the icon is fitting on the shape and no gap is left. For
   // curved shapes, we therefore need to push the icon into the shape a bit.
   // We first determine where the bottom right corner of the icon would be.
-  // @ts-ignore (wrong paper types)
   const iconBaseHalf = vector.rotate(-90).multiply(6)
   const iconBaseRight = intersection.add(iconBaseHalf)
   // Then we create a line at that position pointing into the shape.
@@ -82,10 +64,13 @@ const getTouchingPosition = (
   return touchingPointCenter
 }
 
-export const getInputsOutputs = (
+export const hideConnectorMarkers = (project: paper.Project) =>
+  getMarkers(project).forEach((v) => (v.visible = false))
+
+export const getConnectors = (
   project: paper.Project,
   shape: paper.Path
-): { inputs: ShapeInputOutput[]; outputs: ShapeInputOutput[] } => {
+): { inputs: ShapeConnector[]; outputs: ShapeConnector[] } => {
   const markers = getMarkers(project)
   const inputs = []
   const outputs = []
@@ -104,13 +89,13 @@ export const getInputsOutputs = (
     const vector = firstSegment.point.subtract(lastSegment.point).normalize()
     const markerAngle = +vector.angle.toFixed(2)
 
-    if (direction === 'inout') {
-      // A marker with direction `inout` is basically a way to add a special
-      // input and output that share the same position. So for each `inout`
+    if (direction === 'thru') {
+      // A marker with direction `thru` is basically a way to add a special
+      // input and output that share the same position. So for each `thru`
       // we add an input and and output.
       const a = markerIntersections[0].point
       const b = markerIntersections[length - 1].point
-      const position = { inset: toXY(a.add(b.subtract(a).multiply(0.5))) }
+      const position = { inset: toPoint(a.add(b.subtract(a).multiply(0.5))) }
 
       let offset = shape.getOffsetOf(b)
       let angle = markerAngle + 180
@@ -126,16 +111,16 @@ export const getInputsOutputs = (
       const { point } = markerIntersections[0]
       const offset = shape.getOffsetOf(point)
       const position = {
-        inset: toXY(getInsetPosition(vector, point)),
-        touching: toXY(getTouchingPosition(vector, point, shape)),
+        inset: toPoint(getInsetPosition(vector, point)),
+        touching: toPoint(getTouchingPosition(vector, point, shape)),
       }
       const angle = markerAngle
 
-      const inputOutput = { angle, offset, position }
+      const connector = { angle, offset, position }
       if (direction === 'in') {
-        inputs.push(inputOutput)
+        inputs.push(connector)
       } else {
-        outputs.push(inputOutput)
+        outputs.push(connector)
       }
     }
   }

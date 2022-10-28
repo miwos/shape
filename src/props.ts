@@ -1,29 +1,19 @@
-import { Path, Point } from 'paper/dist/paper-core'
-// @ts-ignore
-import { OffsetUtils } from './OffsetUtils.js'
-import { PointXY } from './types'
-import { toXY } from './utils'
-
-export interface PropsSide {
-  one: PointXY
-  two: PointXY[]
-  three: PointXY[]
-}
+import { Path, Point as PaperPoint } from 'paper/dist/paper-core'
+import { ShapeProps } from './types'
+import { offsetPath, toPoint } from './utils'
 
 const propGap = 30 //px
 
 const validateMarker = (marker: paper.Path, intersectionsCount: number) => {
   let error
 
-  if (marker.segments.length !== 2) {
+  if (marker.segments.length !== 2)
     console.warn(
       `Marker '${marker.name}' should only have two segments but has ${marker.segments.length}.`
     )
-  }
 
-  if (!intersectionsCount) {
+  if (!intersectionsCount)
     error = `Marker '${marker.name}' needs an intersection with shape.`
-  }
 
   if (intersectionsCount > 1)
     console.warn(
@@ -35,9 +25,8 @@ const validateMarker = (marker: paper.Path, intersectionsCount: number) => {
 
 const validateMarkers = (markers: paper.Path[]) => {
   let error
-  if (markers.length > 2) {
+  if (markers.length > 2)
     error = `There shouldn't be more then two props-anchors, found ${markers.length}.`
-  }
   return { error }
 }
 
@@ -46,9 +35,6 @@ const getMarkers = (project: paper.Project) =>
     match: (item: paper.Item) => item.name?.startsWith('props'),
     recursive: true,
   }) as paper.Path[]
-
-export const hideMarkers = (project: paper.Project) =>
-  getMarkers(project).forEach((v) => (v.visible = false))
 
 const getPropPosition = (
   reference: paper.Point,
@@ -64,9 +50,9 @@ const getPropPosition = (
 
   if (side === 'left') intersections.reverse()
 
-  return toXY(
+  return toPoint(
     intersections[intersections.length - 1]?.point ??
-      new Point(shape.getNearestPoint(reference).x, reference.y)
+      new PaperPoint(shape.getNearestPoint(reference).x, reference.y)
   )
 }
 
@@ -75,7 +61,7 @@ const getPropPositions = (
   shape: paper.Path,
   offsetShape: paper.Path,
   side: 'left' | 'right'
-): PropsSide => {
+): ShapeProps => {
   const intersections = shape.getIntersections(marker)
 
   const { error } = validateMarker(marker, intersections.length)
@@ -113,6 +99,9 @@ const getPropPositions = (
   }
 }
 
+export const hidePropMarkers = (project: paper.Project) =>
+  getMarkers(project).forEach((v) => (v.visible = false))
+
 export const getProps = (project: paper.Project, shape: paper.Path) => {
   const markers = getMarkers(project)
   if (markers.length === 0) throw new Error('No prop markers found.')
@@ -127,8 +116,7 @@ export const getProps = (project: paper.Project, shape: paper.Path) => {
   flattenedShape.flatten()
   // A round stroke join seems to yield the most consistent results.
   flattenedShape.strokeJoin = 'round'
-  let offsetShape = OffsetUtils.offsetPath(flattenedShape, 20)
-  offsetShape = offsetShape.unite()
+  const offsetShape = offsetPath(flattenedShape, 20).unite()
 
   // For debugging only:
   offsetShape.strokeColor = 'blue'
