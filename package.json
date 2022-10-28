@@ -1,5 +1,5 @@
 {
-  "name": "shape-compiler",
+  "name": "@miwos/shape",
   "version": "0.0.0",
   "types": "dist",
   "main": "dist/index.js",
