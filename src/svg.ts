@@ -11,7 +11,6 @@ import { exportSVG } from './utils'
 
 export const parseSVG = (
   svg: string,
-  id: string,
   debugCanvas?: HTMLCanvasElement
 ): Shape => {
   const debug = !!debugCanvas
@@ -59,7 +58,6 @@ export const parseSVG = (
   }
 
   return {
-    id,
     props,
     size,
     length,
