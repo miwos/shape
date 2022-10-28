@@ -15,7 +15,6 @@ export interface Point {
 export type Side = 'left' | 'right'
 
 export interface Shape {
-  id: string
   path: string
   outline: string
   length: number
