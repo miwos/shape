@@ -42,8 +42,8 @@ export interface ShapeLabel {
 export interface ShapeConnector {
   angle: number
   offset: number
-  position: {
-    touching?: Point
+  positions: {
+    outline?: Point
     inset: Point
   }
   thru?: boolean

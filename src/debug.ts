@@ -2,10 +2,10 @@ import { Path, Point as PaperPoint, PointText } from 'paper/dist/paper-core'
 import { Point, Shape, ShapeConnector, ShapeLabel } from './types'
 import { perforatePath } from './utils'
 
-const renderConnectorInset = ({ position }: ShapeConnector) =>
-  new Path.Circle({ radius: 6, fillColor: 'black', center: position.inset })
+const renderConnectorInset = ({ positions }: ShapeConnector) =>
+  new Path.Circle({ radius: 6, fillColor: 'black', center: positions.inset })
 
-const renderConnectorTouching = ({ position, angle, thru }: ShapeConnector) => {
+const renderConnectorOutline = ({ positions, angle, thru }: ShapeConnector) => {
   if (thru) return
 
   const triangle = new Path.RegularPolygon({
@@ -15,7 +15,7 @@ const renderConnectorTouching = ({ position, angle, thru }: ShapeConnector) => {
   })
   triangle.bounds.width = 12
   triangle.bounds.height = 12
-  triangle.bounds.bottomCenter = new PaperPoint(position.touching!)
+  triangle.bounds.bottomCenter = new PaperPoint(positions.outline!)
   triangle.rotate(angle - 90, triangle.bounds.bottomCenter)
 }
 
@@ -58,7 +58,7 @@ export const renderDebugInformation = (
 
   inputsOutputs.forEach((v) => {
     renderConnectorInset(v)
-    renderConnectorTouching(v)
+    renderConnectorOutline(v)
   })
 
   labels.forEach(renderLabel)

@@ -42,7 +42,7 @@ const getMarkers = (project: paper.Project) =>
 const getInsetPosition = (vector: paper.Point, intersection: paper.Point) =>
   intersection.add(vector.multiply(14)).round()
 
-const getTouchingPosition = (
+const getOutlinePosition = (
   vector: paper.Point,
   intersection: paper.Point,
   shape: paper.Path
@@ -59,9 +59,9 @@ const getTouchingPosition = (
   )
   // Where the line intersects with the shape tells us how much we have to push
   // the icon into the shape.
-  const touchingPointRight = shape.getIntersections(line)[0].point
-  const touchingPointCenter = touchingPointRight.subtract(iconBaseHalf)
-  return touchingPointCenter
+  const outlinePointRight = shape.getIntersections(line)[0].point
+  const outlinePointCenter = outlinePointRight.subtract(iconBaseHalf)
+  return outlinePointCenter
 }
 
 export const hideConnectorMarkers = (project: paper.Project) =>
@@ -95,28 +95,28 @@ export const getConnectors = (
       // we add an input and and output.
       const a = markerIntersections[0].point
       const b = markerIntersections[length - 1].point
-      const position = { inset: toPoint(a.add(b.subtract(a).multiply(0.5))) }
+      const positions = { inset: toPoint(a.add(b.subtract(a).multiply(0.5))) }
 
       let offset = shape.getOffsetOf(b)
       let angle = markerAngle + 180
-      const input = { position, angle, offset, isInOut: true }
+      const input = { positions, angle, offset, isInOut: true }
 
       offset = shape.getOffsetOf(a)
       angle = markerAngle
-      const output = { position, angle, offset, isInOut: true }
+      const output = { positions, angle, offset, isInOut: true }
 
       inputs.push(input)
       outputs.push(output)
     } else {
       const { point } = markerIntersections[0]
       const offset = shape.getOffsetOf(point)
-      const position = {
+      const positions = {
         inset: toPoint(getInsetPosition(vector, point)),
-        touching: toPoint(getTouchingPosition(vector, point, shape)),
+        outline: toPoint(getOutlinePosition(vector, point, shape)),
       }
       const angle = markerAngle
 
-      const connector = { angle, offset, position }
+      const connector = { angle, offset, positions }
       if (direction === 'in') {
         inputs.push(connector)
       } else {
